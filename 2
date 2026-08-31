@@ -1,0 +1,94 @@
+lis=[1,2,3,8,4]
+print()
+#1#
+print("raw list")
+print(lis)
+
+#convert list into rdd
+
+rddin=sc.parallelize(lis)
+print()
+print("rddin")
+print(rddin.collect())
+
+addin=rddin.map(lambda X : X+2)
+print(addin.collect())
+
+mulin=rddin.map(lambda X : X*10)
+print(mulin.collect())
+
+subin=rddin.map(lambda X : X-2)
+print(subin.collect())
+
+#op#
+raw list
+[1, 2, 3, 8, 4]
+
+rddin
+[1, 2, 3, 8, 4]
+[3, 4, 5, 10, 6]
+26/08/31 14:40:27 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
+[10, 20, 30, 80, 40]
+[-1, 0, 1, 6, 2]
+
+#3#
+#filter 
+fillin=rddin.filter(lambda X :X>2)
+print(fillin.collect())
+#op#
+[3, 8, 4]
+
+#4#
+lisstr=['zeyobron','zeyo','tera']
+print("==lisstr==")
+print(lisstr)
+
+rddstr=sc.parallelize(lisstr)
+print()
+print("==rddstr collector==")
+print(rddstr.collect())
+
+constr=rddstr.map(lambda X :X +"Analytics")
+print()
+print("==concat==")
+print(constr.collect())
+
+
+#op#
+==lisstr==
+['zeyobron', 'zeyo', 'tera']
+
+==rddstr collector==
+['zeyobron', 'zeyo', 'tera']
+
+==concat==
+['zeyobronAnalytics', 'zeyoAnalytics', 'teraAnalytics']
+
+#5#
+repstr=rddstr.map(lambda X :X.replace("zeyo","GEO"))
+print()
+print("==replace==")
+print(repstr.collect())
+#op#
+==replace==
+['GEObron', 'GEO', 'tera']
+
+#6#
+filstr=rddstr.filter(lambda X :"zeyo" in X )
+print()
+print("==filter==")
+print(filstr.collect())
+# op #
+
+==filter==
+['zeyobron', 'zeyo']
+
+#7#
+remstr=rddstr.map(lambda X :X.replace("zeyo",""))
+print()
+print("==remove==")
+print(remstr.collect())
+
+#op#
+==remove==
+['bron', '', 'tera']

@@ -1,0 +1,21 @@
+# first handson 
+rint ("started")
+a=2
+print(a)
+
+b=a+2
+print(b)
+
+c="zeyoborn"
+print(c)
+
+d=c+"analytics"
+print(d)
+
+lis=[1,2,3,8,4]
+print(lis)
+
+#convert list into rdd
+
+rddlis=sc.parallelize(lis)
+print(rddlis.collect())
