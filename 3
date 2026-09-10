@@ -1,0 +1,334 @@
+#1#
+listst=["A~b","c~b"]
+print()
+print("===list==")
+print(listst)
+
+rddst=sc.parallelize(listst)
+print()
+print("===rddd==")
+print(rddst.collect())
+
+#map split
+mapsplit=rddst.map(lambda X :X.split("~"))
+print()
+print("===map split==")
+print(rddst.collect())
+
+#flatmap
+flatsplit=rddst.flatMap(lambda X:X.split("~"))
+print()
+print("===flatmap split==")
+print(flatsplit.collect())
+
+#op#
+===list==
+['A~b', 'c~b']
+
+===rddd==
+['A~b', 'c~b']
+
+===map split==
+['A~b', 'c~b']
+
+===flatmap split==
+['A', 'b', 'c', 'b']
+
+#2#
+rawlis=["State->TN~City->Chennai","State->Kerla~City-Trivandrum"]
+print()
+print("===rawlist==")
+print(rawlis)
+
+rddlis=sc.parallelize(rawlis)
+print()
+print("===rddd lis==")
+print(rddlis.collect())
+
+flatdata=rddlis.flatMap(lambda X:X.split("~"))
+print()
+print("===flat map list==")
+print(flatdata.collect())
+
+statefill=flatdata.filter(lambda X : "State"  in X)
+print()
+print("===filter state ==")
+print(statefill.collect())
+
+cityfill=flatdata.filter(lambda X : "City" in X)
+print()
+print("===filter city ==")
+print(cityfill.collect())
+
+states =statefill.map(lambda X : X.replace("State->",""))
+print()
+print("===final states  ==")
+print(states.collect())
+
+cities=cityfill.map(lambda X : X.replace("City->",""))
+print()
+print("===final city ==")
+print(states.collect())
+
+#op#
+===rawlist==
+['State->TN~City->Chennai', 'State->Kerla~City-Trivandrum']
+
+===rddd lis==
+['State->TN~City->Chennai', 'State->Kerla~City-Trivandrum']
+
+===flat map list==
+['State->TN', 'City->Chennai', 'State->Kerla', 'City-Trivandrum']
+
+===filter state ==
+['State->TN', 'State->Kerla']
+
+===filter city ==
+['City->Chennai', 'City-Trivandrum']
+
+===final states  ==
+['TN', 'Kerla']
+
+===final city ==
+['TN', 'Kerla']
+
+#3#
+rawlis=["State->TN~City->Chennai","State->Kerla~City-Trivandrum"]
+print()
+print("===rawlist==")
+print(rawlis)
+
+rddlis=sc.parallelize(rawlis)
+print()
+print("===rddd lis==")
+print(rddlis.foreach(print))
+
+flatdata=rddlis.flatMap(lambda X:X.split("~"))
+print()
+print("===flat map list==")
+print(flatdata.foreach(print))
+
+statefill=flatdata.filter(lambda X : "State"  in X)
+print()
+print("===filter state ==")
+print(statefill.foreach(print))
+
+cityfill=flatdata.filter(lambda X : "City" in X)
+print()
+print("===filter city ==")
+print(cityfill.foreach(print))
+
+states =statefill.map(lambda X : X.replace("State->",""))
+print()
+print("===final states  ==")
+print(states.foreach(print))
+
+cities=cityfill.map(lambda X : X.replace("City->",""))
+print()
+print("===final city ==")
+print(states.foreach(print))
+
+#op#
+===rawlist==
+['State->TN~City->Chennai', 'State->Kerla~City-Trivandrum']
+
+===rddd lis==
+State->TN~City->Chennai
+State->Kerla~City-Trivandrum
+None
+
+===flat map list==
+State->TN
+City->Chennai
+State->Kerla
+City-Trivandrum
+None
+
+===filter state ==
+State->TN
+State->Kerla
+None
+
+===filter city ==
+City->Chennai
+City-Trivandrum
+None
+
+===final states  ==
+TN
+Kerla
+None
+
+===final city ==
+26/09/02 12:50:48 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
+TN
+Kerla
+None
+
+#4#
+rddlis=sc.textFile("state.txt")
+print()
+print("===rddd lis==")
+print(rddlis.foreach(print))
+
+flatdata=rddlis.flatMap(lambda X:X.split("~"))#row wise itration ok
+print()
+print("===flat map list==")
+print(flatdata.foreach(print))
+
+statefill=flatdata.filter(lambda X : "State"  in X)
+print()
+print("===filter state ==")
+print(statefill.foreach(print))
+
+cityfill=flatdata.filter(lambda X : "City" in X)
+print()
+print("===filter city ==")
+print(cityfill.foreach(print))
+
+states =statefill.map(lambda X : X.replace("State->",""))
+print()
+print("===final states  ==")
+print(states.foreach(print))
+
+cities=cityfill.map(lambda X : X.replace("City->",""))
+print()
+print("===final city ==")
+print(states.foreach(print))  #also do using collect
+
+#op#
+===rddd lis==
+State->TN~City->Chennai
+State->Kerala~City->Trivandrum
+None
+
+===flat map list==
+State->TN
+City->Chennai
+State->Kerala
+City->Trivandrum
+None
+
+===filter state ==
+State->TN
+None
+
+===filter city ==
+State->Kerala
+City->Chennai
+City->Trivandrum
+None
+
+===final states  ==
+TN
+Kerala
+None
+
+===final city ==
+TN
+Kerala
+None
+
+
+#5#
+
+rddlis=sc.textFile("state.txt")#now data came from file
+print()
+print("===rddd lis==")
+print(rddlis.foreach(print))
+
+rddlis.map(lambda X : X.split("~")).toDF(['STATES']).show()#file read ok states 1 column name give ok
+
+#op#
+===rddd lis==
+State->TN~City->Chennai
+State->Kerala~City->Trivandrum
+None
+26/09/02 13:07:00 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
++-------------+----------------+
+|       STATES|              _2|
++-------------+----------------+
+|    State->TN|   City->Chennai|
+|State->Kerala|City->Trivandrum|
++-------------+----------------+
+
+
+#6#
+# readt dt.txt and filletr the gymanastic ok
+data=sc.textFile("dt.txt")
+print()
+print("===rddd lis==")
+print(data.foreach(print))
+
+gymdata=data.filter(lambda X : 'Gymnastics' in X)
+print()
+print("===gymdata==")
+print(gymdata.foreach(print))
+
+#op#
+
+===rddd lis==
+00000000,06-26-2011,200,Exercise,GymnasticsPro,cash
+00000001,05-26-2011,300,Exercise,Weightlifting,credit
+00000002,06-01-2011,100,Exercise,GymnasticsPro,cash
+00000003,06-05-2011,100,Gymnastics,Rings,credit
+00000004,12-17-2011,300,Team Sports,Field,paytm
+00000005,02-14-2011,200,Gymnastics,,cash
+None
+
+===gymdata==
+00000000,06-26-2011,200,Exercise,GymnasticsPro,cash
+00000002,06-01-2011,100,Exercise,GymnasticsPro,cash
+00000003,06-05-2011,100,Gymnastics,Rings,credit
+00000005,02-14-2011,200,Gymnastics,,cash
+None
+
+#store result in text file ok
+gymdata.saveAsTextFile("gymdata.txt")
+
+#7#convert rdd into data frame 
+data = sc.textFile("dt.txt")
+print()
+print(data)
+print(data.collect())
+data.foreach(print)
+
+gymdata = data.filter( lambda x : 'Gymnastics' in x )
+print()
+print("====gymdata====")
+print(gymdata.collect())
+gymdata.foreach(print)
+
+
+mapsplit = gymdata.map(lambda x : x.split(","))
+
+
+df = mapsplit.toDF(["id","tdate","amt","category","product","mode"])
+df.show()
+
+df.write.parquet("gymdata.parquet")
+
+
+#op#['00000000,06-26-2011,200,Exercise,GymnasticsPro,cash', '00000001,05-26-2011,300,Exercise,Weightlifting,credit', '00000002,06-01-2011,100,Exercise,GymnasticsPro,cash', '00000003,06-05-2011,100,Gymnastics,Rings,credit', '00000004,12-17-2011,300,Team Sports,Field,paytm', '00000005,02-14-2011,200,Gymnastics,,cash']
+00000000,06-26-2011,200,Exercise,GymnasticsPro,cash
+00000001,05-26-2011,300,Exercise,Weightlifting,credit
+00000002,06-01-2011,100,Exercise,GymnasticsPro,cash
+00000003,06-05-2011,100,Gymnastics,Rings,credit
+00000004,12-17-2011,300,Team Sports,Field,paytm
+00000005,02-14-2011,200,Gymnastics,,cash
+                                                                                
+====gymdata====
+['00000000,06-26-2011,200,Exercise,GymnasticsPro,cash', '00000002,06-01-2011,100,Exercise,GymnasticsPro,cash', '00000003,06-05-2011,100,Gymnastics,Rings,credit', '00000005,02-14-2011,200,Gymnastics,,cash']
+00000000,06-26-2011,200,Exercise,GymnasticsPro,cash
+00000002,06-01-2011,100,Exercise,GymnasticsPro,cash
+00000003,06-05-2011,100,Gymnastics,Rings,credit
+00000005,02-14-2011,200,Gymnastics,,cash
+26/09/02 14:45:47 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
++--------+----------+---+----------+-------------+------+
+|      id|     tdate|amt|  category|      product|  mode|
++--------+----------+---+----------+-------------+------+
+|00000000|06-26-2011|200|  Exercise|GymnasticsPro|  cash|
+|00000002|06-01-2011|100|  Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100|Gymnastics|        Rings|credit|
+|00000005|02-14-2011|200|Gymnastics|             |  cash|
++--------+----------+---+----------+-------------+------+

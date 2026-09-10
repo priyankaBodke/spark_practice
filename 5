@@ -1,0 +1,439 @@
+#1#
+data = [
+
+("00000000", "06-26-2011", 200, "Exercise", "GymnasticsPro", "cash"),
+
+("00000001", "05-26-2011", 300, "Exercise", "Weightlifting", "credit"),
+
+("00000002", "06-01-2011", 100, "Exercise", "GymnasticsPro", "cash"),
+
+("00000003", "06-05-2011", 100, "Gymnastics", "Rings", "credit"),
+
+("00000004", "12-17-2011", 300, "Team Sports", "Field", "paytm"),
+
+("00000005", "02-14-2011", 200, "Gymnastics", None, "cash")
+
+]
+
+  
+
+df = spark.createDataFrame(data).toDF(
+
+"id", "tdate", "amt", "category", "product", "mode"
+
+)
+
+  
+
+df.display()
+
+  
+  
+  
+
+seldf = df.select( "tdate" , "category" )
+
+seldf.show()
+
+  
+  
+
+dropdf = df.drop("tdate" , "category"  )
+
+dropdf.show()
+
+  
+  
+  
+  
+
+fildf = df.filter( "category = 'Gymnastics'" )
+
+fildf.show()
+
+  
+  
+
+muldf = df.filter( "category = 'Gymnastics' and mode='cash'" )
+
+muldf.show()
+
+
+
+muldfor = df.filter( "category ='Exercise' or mode = 'cash' ")
+
+muldfor.show()
+
+
+
+infil = df.filter(" category in ('Gymnastics' , 'Exercise') ")
+
+infil.show()
+
+
+likefil = df.filter(  " product  like   '%Gymnastics%'     "   )
+
+likefil.show()
+
+  
+  
+
+nullfil = df.filter( " product is null ")
+
+nullfil.show()
+
+  
+  
+
+notnullfil = df.filter( "product is not null" )
+
+notnullfil.show()
+
+
+notfill = df.filter(" category != 'Exercise' ")
+notfill.show()
+
+
+
+#op#
++--------+----------+---+-----------+-------------+------+
+|      id|     tdate|amt|   category|      product|  mode|
++--------+----------+---+-----------+-------------+------+
+|00000000|06-26-2011|200|   Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|   Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|   Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100| Gymnastics|        Rings|credit|
+|00000004|12-17-2011|300|Team Sports|        Field| paytm|
+|00000005|02-14-2011|200| Gymnastics|         null|  cash|
++--------+----------+---+-----------+-------------+------+
+
++----------+-----------+
+|     tdate|   category|
++----------+-----------+
+|06-26-2011|   Exercise|
+|05-26-2011|   Exercise|
+|06-01-2011|   Exercise|
+|06-05-2011| Gymnastics|
+|12-17-2011|Team Sports|
+|02-14-2011| Gymnastics|
++----------+-----------+
+
++--------+---+-------------+------+
+|      id|amt|      product|  mode|
++--------+---+-------------+------+
+|00000000|200|GymnasticsPro|  cash|
+|00000001|300|Weightlifting|credit|
+|00000002|100|GymnasticsPro|  cash|
+|00000003|100|        Rings|credit|
+|00000004|300|        Field| paytm|
+|00000005|200|         null|  cash|
++--------+---+-------------+------+
+
++--------+----------+---+----------+-------+------+
+|      id|     tdate|amt|  category|product|  mode|
++--------+----------+---+----------+-------+------+
+|00000003|06-05-2011|100|Gymnastics|  Rings|credit|
+|00000005|02-14-2011|200|Gymnastics|   null|  cash|
++--------+----------+---+----------+-------+------+
+
++--------+----------+---+----------+-------+----+
+|      id|     tdate|amt|  category|product|mode|
++--------+----------+---+----------+-------+----+
+|00000005|02-14-2011|200|Gymnastics|   null|cash|
++--------+----------+---+----------+-------+----+
+
++--------+----------+---+----------+-------------+------+
+|      id|     tdate|amt|  category|      product|  mode|
++--------+----------+---+----------+-------------+------+
+|00000000|06-26-2011|200|  Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|  Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|  Exercise|GymnasticsPro|  cash|
+|00000005|02-14-2011|200|Gymnastics|         null|  cash|
++--------+----------+---+----------+-------------+------+
+
++--------+----------+---+----------+-------------+------+
+|      id|     tdate|amt|  category|      product|  mode|
++--------+----------+---+----------+-------------+------+
+|00000000|06-26-2011|200|  Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|  Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|  Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100|Gymnastics|        Rings|credit|
+|00000005|02-14-2011|200|Gymnastics|         null|  cash|
++--------+----------+---+----------+-------------+------+
+
+26/09/09 17:37:18 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
++--------+----------+---+--------+-------------+----+
+|      id|     tdate|amt|category|      product|mode|
++--------+----------+---+--------+-------------+----+
+|00000000|06-26-2011|200|Exercise|GymnasticsPro|cash|
+|00000002|06-01-2011|100|Exercise|GymnasticsPro|cash|
++--------+----------+---+--------+-------------+----+
+
++--------+----------+---+----------+-------+----+
+|      id|     tdate|amt|  category|product|mode|
++--------+----------+---+----------+-------+----+
+|00000005|02-14-2011|200|Gymnastics|   null|cash|
++--------+----------+---+----------+-------+----+
+
++--------+----------+---+-----------+-------------+------+
+|      id|     tdate|amt|   category|      product|  mode|
++--------+----------+---+-----------+-------------+------+
+|00000000|06-26-2011|200|   Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|   Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|   Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100| Gymnastics|        Rings|credit|
+|00000004|12-17-2011|300|Team Sports|        Field| paytm|
++--------+----------+---+-----------+-------------+------+
+
++--------+----------+---+-----------+-------+------+
+|      id|     tdate|amt|   category|product|  mode|
++--------+----------+---+-----------+-------+------+
+|00000003|06-05-2011|100| Gymnastics|  Rings|credit|
+|00000004|12-17-2011|300|Team Sports|  Field| paytm|
+|00000005|02-14-2011|200| Gymnastics|   null|  cash|
++--------+----------+---+-----------+-------+------+
+
+
+Process finished with exit code 0
+#2#
+ata = [
+
+    ("00000000", "06-26-2011", 200, "Exercise", "GymnasticsPro", "cash"),
+
+    ("00000001", "05-26-2011", 300, "Exercise", "Weightlifting", "credit"),
+
+    ("00000002", "06-01-2011", 100, "Exercise", "GymnasticsPro", "cash"),
+
+    ("00000003", "06-05-2011", 100, "Gymnastics", "Rings", "credit"),
+
+    ("00000004", "12-17-2011", 300, "Team Sports", "Field", "paytm"),
+
+    ("00000005", "02-14-2011", 200, "Gymnastics", None, "cash")
+
+]
+
+df = spark.createDataFrame(data).toDF(
+    "id", "tdate", "amt", "category", "product", "mode"
+)
+
+df.show()
+
+
+procdf = df.selectExpr(
+
+    "cast(id as int) as id",
+
+    "tdate",
+
+    "amt + 100  as amt",
+
+    "upper(category) as category",
+
+    "concat(product,'~zeyo') as product",
+
+    "mode"
+
+)
+
+procdf.show()
+
+procdf.printSchema()
+
+#op#
+
++--------+----------+---+-----------+-------------+------+
+|      id|     tdate|amt|   category|      product|  mode|
++--------+----------+---+-----------+-------------+------+
+|00000000|06-26-2011|200|   Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|   Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|   Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100| Gymnastics|        Rings|credit|
+|00000004|12-17-2011|300|Team Sports|        Field| paytm|
+|00000005|02-14-2011|200| Gymnastics|         null|  cash|
++--------+----------+---+-----------+-------------+------+
+
++---+----------+---+-----------+------------------+------+
+| id|     tdate|amt|   category|           product|  mode|
++---+----------+---+-----------+------------------+------+
+|  0|06-26-2011|300|   EXERCISE|GymnasticsPro~zeyo|  cash|
+|  1|05-26-2011|400|   EXERCISE|Weightlifting~zeyo|credit|
+|  2|06-01-2011|200|   EXERCISE|GymnasticsPro~zeyo|  cash|
+|  3|06-05-2011|200| GYMNASTICS|        Rings~zeyo|credit|
+|  4|12-17-2011|400|TEAM SPORTS|        Field~zeyo| paytm|
+|  5|02-14-2011|300| GYMNASTICS|              null|  cash|
++---+----------+---+-----------+------------------+------+
+
+root
+ |-- id: integer (nullable = true)
+ |-- tdate: string (nullable = true)
+ |-- amt: long (nullable = true)
+ |-- category: string (nullable = true)
+ |-- product: string (nullable = true)
+ |-- mode: string (nullable = true)
+
+
+#3#
+
+
+"split(tdate,'-')[2]  as year",
+
+    "split(tdate,'-')[1]  as day",
+
+    "split(tdate,'-')[0]  as month",
+
+
+#op#
+
++---+----+---+-----+---+-----------+------------------+------+
+| id|year|day|month|amt|   category|           product|  mode|
++---+----+---+-----+---+-----------+------------------+------+
+|  0|2011| 26|   06|300|   EXERCISE|GymnasticsPro~zeyo|  cash|
+|  1|2011| 26|   05|400|   EXERCISE|Weightlifting~zeyo|credit|
+|  2|2011| 01|   06|200|   EXERCISE|GymnasticsPro~zeyo|  cash|
+|  3|2011| 05|   06|200| GYMNASTICS|        Rings~zeyo|credit|
+|  4|2011| 17|   12|400|TEAM SPORTS|        Field~zeyo| paytm|
+|  5|2011| 14|   02|300| GYMNASTICS|              null|  cash|
++---+----+---+-----+---+-----------+------------------+------+
+
+
+#5#
+data = [
+    ("00000000", "06-26-2011", 200, "Exercise", "GymnasticsPro", "cash"),
+    ("00000001", "05-26-2011", 300, "Exercise", "Weightlifting", "credit"),
+    ("00000002", "06-01-2011", 100, "Exercise", "GymnasticsPro", "cash"),
+    ("00000003", "06-05-2011", 100, "Gymnastics", "Rings", "credit"),
+    ("00000004", "12-17-2011", 300, "Team Sports", "Field", "paytm"),
+    ("00000005", "02-14-2011", 200, "Gymnastics", None, "cash")
+]
+
+df = spark.createDataFrame(data).toDF(
+    "id", "tdate", "amt", "category", "product", "mode"
+)
+
+df.show()
+
+
+
+procdf = df.selectExpr(
+
+    "cast(id as int) as id",
+
+    "split(tdate,'-')[2]  as year",
+
+    "split(tdate,'-')[1]  as day",
+
+    "split(tdate,'-')[0]  as month",
+
+    "amt + 100  as amt",
+
+    "upper(category) as category",
+
+    "concat(product,'~zeyo') as product",
+
+    "mode",
+
+    """  
+    case  
+    when mode = 'cash' then 0 
+    when mode = 'credit' then 1 
+    else 2 
+    end 
+    as status
+    
+    """
+
+)
+
+procdf.show()
+
+procdf.printSchema()
+
+#op#
+
+---+----+---+-----+---+-----------+------------------+------+------+
+| id|year|day|month|amt|   category|           product|  mode|status|
++---+----+---+-----+---+-----------+------------------+------+------+
+|  0|2011| 26|   06|300|   EXERCISE|GymnasticsPro~zeyo|  cash|     0|
+|  1|2011| 26|   05|400|   EXERCISE|Weightlifting~zeyo|credit|     1|
+|  2|2011| 01|   06|200|   EXERCISE|GymnasticsPro~zeyo|  cash|     0|
+|  3|2011| 05|   06|200| GYMNASTICS|        Rings~zeyo|credit|     1|
+|  4|2011| 17|   12|400|TEAM SPORTS|        Field~zeyo| paytm|     2|
+|  5|2011| 14|   02|300| GYMNASTICS|              null|  cash|     0|
++---+----+---+-----+---+-----------+------------------+------+------+
+
+
+#6#
+
+data = [
+    ("00000000", "06-26-2011", 200, "Exercise", "GymnasticsPro", "cash"),
+    ("00000001", "05-26-2011", 300, "Exercise", "Weightlifting", "credit"),
+    ("00000002", "06-01-2011", 100, "Exercise", "GymnasticsPro", "cash"),
+    ("00000003", "06-05-2011", 100, "Gymnastics", "Rings", "credit"),
+    ("00000004", "12-17-2011", 300, "Team Sports", "Field", "paytm"),
+    ("00000005", "02-14-2011", 200, "Gymnastics", None, "cash")
+]
+
+df = spark.createDataFrame(data).toDF(
+    "id", "tdate", "amt", "category", "product", "mode"
+)
+
+df.show()
+
+
+
+
+procdf = df.selectExpr(
+
+
+    "upper(category) as category"
+
+
+
+)
+
+
+procdf.show()
+
+
+
+
+from pyspark.sql.functions import *
+
+withdf = df.withColumn(  "category"  ,  expr("upper(category)")  )
+withdf.show()
+
+#op#
+26/09/09 18:19:07 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
++--------+----------+---+-----------+-------------+------+
+|      id|     tdate|amt|   category|      product|  mode|
++--------+----------+---+-----------+-------------+------+
+|00000000|06-26-2011|200|   Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|   Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|   Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100| Gymnastics|        Rings|credit|
+|00000004|12-17-2011|300|Team Sports|        Field| paytm|
+|00000005|02-14-2011|200| Gymnastics|         null|  cash|
++--------+----------+---+-----------+-------------+------+
+
++-----------+
+|   category|
++-----------+
+|   EXERCISE|
+|   EXERCISE|
+|   EXERCISE|
+| GYMNASTICS|
+|TEAM SPORTS|
+| GYMNASTICS|
++-----------+
+
++--------+----------+---+-----------+-------------+------+
+|      id|     tdate|amt|   category|      product|  mode|
++--------+----------+---+-----------+-------------+------+
+|00000000|06-26-2011|200|   EXERCISE|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|   EXERCISE|Weightlifting|credit|
+|00000002|06-01-2011|100|   EXERCISE|GymnasticsPro|  cash|
+|00000003|06-05-2011|100| GYMNASTICS|        Rings|credit|
+|00000004|12-17-2011|300|TEAM SPORTS|        Field| paytm|
+|00000005|02-14-2011|200| GYMNASTICS|         null|  cash|
++--------+----------+---+-----------+-------------+------+
+

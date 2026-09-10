@@ -1,0 +1,262 @@
+
+
+#1#
+csvdf = (
+
+    spark
+    .read
+    .format("csv")
+    .option("header","true")
+    .load("usdata.csv")
+)
+csvdf.show()
+
+
+
+jsondf = (
+
+    spark
+    .read
+    .format("json")
+    .load("file4.json")
+
+
+)
+
+jsondf.show()
+
+
+
+parquetdf =(
+
+    spark
+    .read
+    .format("parquet")
+    .load("file5.parquet")
+
+
+
+)
+parquetdf.show()
+
+#op#
+
+
++----------+---------+--------------------+--------------------+-------------+--------------+-----+-----+---+------------+------------+--------------------+--------------------+
+|first_name|last_name|        company_name|             address|         city|        county|state|  zip|age|      phone1|      phone2|               email|                 web|
++----------+---------+--------------------+--------------------+-------------+--------------+-----+-----+---+------------+------------+--------------------+--------------------+
+|     James|     Butt|   Benton, John B Jr|  6649 N Blue Gum St|  New Orleans|       Orleans|   LA|70116|  9|504-621-8927|504-845-1427|     jbutt@gmail.com|http://www.benton...|
+| Josephine|  Darakjy|Chanay, Jeffrey A...| 4 B Blue Ridge Blvd|     Brighton|    Livingston|   MI|48116|  8|810-292-9388|810-374-9840|josephine_darakjy...|http://www.chanay...|
+|       Art|   Venere| Chemel, James L Cpa|8 W Cerritos Ave #54|   Bridgeport|    Gloucester|   NJ| 8014|  7|856-636-8749|856-264-4130|      art@venere.org|http://www.chemel...|
+|     Lenna| Paprocki|Feltz Printing Se...|         639 Main St|    Anchorage|     Anchorage|   AK|99501| 10|907-385-4412|907-921-2010|lpaprocki@hotmail...|http://www.feltzp...|
+|   Donette|   Foller| Printing Dimensions|        34 Center St|     Hamilton|        Butler|   OH|45011| 11|513-570-1893|513-549-4561|donette.foller@co...|http://www.printi...|
+|    Simona|  Morasca| Chapman, Ross E Esq|        3 Mcauley Dr|      Ashland|       Ashland|   OH|44805| 14|419-503-2484|419-800-6759|  simona@morasca.com|http://www.chapma...|
+|    Mitsue|  Tollner|  Morlong Associates|           7 Eads St|      Chicago|          Cook|   IL|60632| 15|773-573-6914|773-924-8565|mitsue_tollner@ya...|http://www.morlon...|
+|     Leota| Dilliard|    Commercial Press|    7 W Jackson Blvd|     San Jose|   Santa Clara|   CA|95111| 20|408-752-3500|408-813-1105|   leota@hotmail.com|http://www.commer...|
+|      Sage|   Wieser|Truhlar And Truhl...|    5 Boston Ave #88|  Sioux Falls|     Minnehaha|   SD|57105| 19|605-414-2147|605-794-4895| sage_wieser@cox.net|http://www.truhla...|
+|      Kris|  Marrier|King, Christopher...|228 Runamuck Pl #...|    Baltimore|Baltimore City|   MD|21224| 25|410-655-8723|410-804-4694|      kris@gmail.com|http://www.kingch...|
+|     Minna|   Amigon|   Dorl, James J Esq|    2371 Jerrold Ave|   Kulpsville|    Montgomery|   PA|19443| 33|215-874-1229|215-422-8694|minna_amigon@yaho...|http://www.dorlja...|
+|      Abel|  Maclead| Rangoni Of Florence|  37275 St  Rt 17m M|Middle Island|       Suffolk|   NY|11953| 43|631-335-3414|631-677-3675|  amaclead@gmail.com|http://www.rangon...|
+|     Kiley|Caldarera|         Feiner Bros|    25 E 75th St #69|  Los Angeles|   Los Angeles|   CA|90034| 55|310-498-5651|310-254-3084|kiley.caldarera@a...|http://www.feiner...|
+|  Graciela|     Ruta|Buckley Miller & ...|98 Connecticut Av...|Chagrin Falls|        Geauga|   OH|44023| 33|440-780-8425|440-579-7763|       gruta@cox.net|http://www.buckle...|
+|     Cammy|  Albares|Rousseaux, Michae...|    56 E Morehead St|       Laredo|          Webb|   TX|78045| 34|956-537-6195|956-841-7216|  calbares@gmail.com|http://www.rousse...|
+|    Mattie| Poquette|Century Communica...| 73 State Road 434 E|      Phoenix|      Maricopa|   AZ|85013| 33|602-277-4385|602-953-6360|      mattie@aol.com|http://www.centur...|
+|   Meaghan|   Garufi|  Bolton, Wilbur Esq| 69734 E Carrillo St| Mc Minnville|        Warren|   TN|37110| 21|931-313-9635|931-235-7959| meaghan@hotmail.com|http://www.bolton...|
+|    Gladys|      Rim|T M Byxbee Compan...|322 New Horizon Blvd|    Milwaukee|     Milwaukee|   WI|53207| 11|414-661-9598|414-377-2880|  gladys.rim@rim.org|http://www.tmbyxb...|
+|      Yuki|  Whobrey|Farmers Insurance...|    1 State Route 27|       Taylor|         Wayne|   MI|48180| 19|313-288-7937|313-341-4470|yuki_whobrey@aol.com|http://www.farmer...|
+|  Fletcher|    Flosi|Post Box Services...| 394 Manchester Blvd|     Rockford|     Winnebago|   IL|61109|  9|815-828-2147|815-426-5657|fletcher.flosi@ya...|http://www.postbo...|
++----------+---------+--------------------+--------------------+-------------+--------------+-----+-----+---+------------+------------+--------------------+--------------------+
+only showing top 20 rows
+
++------+--------------------+-------------+-------+--------------------+-------+--------------+----------+--------+
+|amount|            category|         city| custno|             product|spendby|         state|   txndate|   txnno|
++------+--------------------+-------------+-------+--------------------+-------+--------------+----------+--------+
+|074.68|       Winter Sports|   Long Beach|4002143|            Sledding| credit|    California|09-06-2011|00060747|
+|138.63|             Jumping|    Vancouver|4000219|         Pogo Sticks| credit|    Washington|09-17-2011|00060748|
+|173.42|         Team Sports|      Everett|4009381|             Cricket| credit|    Washington|10-02-2011|00060749|
+|155.85|  Exercise & Fitness|      Buffalo|4007813|Weightlifting Mac...| credit|      New York|02-08-2011|00060750|
+|101.17|        Indoor Games|   Long Beach|4009254|            Foosball| credit|    California|09-09-2011|00060751|
+|038.03|Outdoor Play Equi...|   Louisville|4005048|              Slides|   cash|      Kentucky|02-11-2011|00060752|
+|081.60|        Water Sports|         Reno|4007180|Scuba Diving & Sn...| credit|        Nevada|02-15-2011|00060753|
+|038.19|        Indoor Games|  Jersey City|4001196|          Air Hockey|   cash|    New Jersey|05-06-2011|00060754|
+|019.46|         Team Sports|   Richmond  |4002848|             Cricket|   cash|      Virginia|09-20-2011|00060755|
+|139.94|               Games|Coral Springs|4007659|  Poker Chips & Sets| credit|       Florida|09-20-2011|00060756|
+|043.60|         Team Sports|  St. Louis  |4003235|              Hockey|   cash|      Missouri|03-03-2011|00060757|
+|114.53|  Outdoor Recreation|   Sacramento|4006814|           Disc Golf| credit|    California|05-09-2011|00060758|
+|177.96|        Indoor Games|     Paterson|4000283|           Billiards| credit|    New Jersey|09-01-2011|00060759|
+|007.43|        Water Sports|Coral Springs|4006518|        Life Jackets|   cash|       Florida|08-27-2011|00060760|
+|111.08|               Games|     Rockford|4004834|          Card Games| credit|      Illinois|07-17-2011|00060761|
+|061.13|  Outdoor Recreation|   Charleston|4007842|       Track & Field| credit|South Carolina|05-11-2011|00060762|
+|056.21|  Outdoor Recreation|      Atlanta|4009908|   Deck Shuffleboard| credit|       Georgia|12-13-2011|00060763|
+|061.29|  Outdoor Recreation|    San Diego|4009014|             Skating| credit|    California|08-28-2011|00060764|
+|078.07|               Games|       Durham|4009094|         Board Games| credit|North Carolina|06-11-2011|00060765|
+|020.24|             Jumping|     Columbus|4001347|         Pogo Sticks|   cash|       Georgia|06-06-2011|00060766|
++------+--------------------+-------------+-------+--------------------+-------+--------------+----------+--------+
+only showing top 20 rows
+
++--------+----------+-------+------+--------------------+-------------------+-------------+-------------+-------+
+|   txnno|   txndate| custno|amount|            category|            product|         city|        state|spendby|
++--------+----------+-------+------+--------------------+-------------------+-------------+-------------+-------+
+|00075990|10-27-2011|4004658|063.14|        Water Sports| Whitewater Rafting|  Springfield|     Illinois| credit|
+|00075991|11-23-2011|4009784|005.46|Outdoor Play Equi...|   Outdoor Playsets|   Cincinnati|         Ohio|   cash|
+|00075992|04-20-2011|4000281|175.44|  Exercise & Fitness|Abdominal Equipment|   Long Beach|   California| credit|
+|00075993|05-12-2011|4005096|061.08|         Team Sports|       Cheerleading|   Montgomery|      Alabama| credit|
+|00075994|12-16-2011|4002516|005.20|  Outdoor Recreation|      Rock Climbing|  Chattanooga|    Tennessee|   cash|
+|00075995|10-18-2011|4002875|115.57|  Outdoor Recreation|         Geocaching|        Boise|        Idaho| credit|
+|00075996|04-05-2011|4003288|182.02|       Combat Sports|             Boxing|    Baltimore|     Maryland| credit|
+|00075997|05-18-2011|4002680|097.75|             Jumping|     Bungee Jumping|     Portland|       Oregon| credit|
+|00075998|10-10-2011|4003177|181.85|        Indoor Games|         Air Hockey|       Boston|Massachusetts| credit|
+|00075999|10-07-2011|4007526|084.44|  Outdoor Recreation|        Motorsports|    Cleveland|         Ohio| credit|
+|00076000|07-29-2011|4002374|129.91|          Gymnastics|   Gymnastics Rings|   Cincinnati|         Ohio| credit|
+|00076001|09-21-2011|4001795|057.17|         Team Sports|   Beach Volleyball|     Rockford|     Illinois| credit|
+|00076002|05-13-2011|4007526|031.04|          Gymnastics|   Gymnastics Rings|  Jersey City|   New Jersey| credit|
+|00076003|09-15-2011|4006044|125.84|Outdoor Play Equi...|         Swing Sets|Jacksonville |      Florida| credit|
+|00076004|02-01-2011|4004342|102.10|        Water Sports|       Water Tubing|     McKinney|        Texas| credit|
+|00076005|07-27-2011|4004221|059.98|       Combat Sports|          Wrestling|  Minneapolis|    Minnesota| credit|
+|00076006|04-24-2011|4005091|121.95|         Team Sports|            Curling|     McKinney|        Texas| credit|
+|00076007|01-03-2011|4006715|149.90|  Exercise & Fitness|     Medicine Balls|     Columbus|      Georgia| credit|
+|00076008|02-23-2011|4005043|186.21|         Team Sports|      Team Handball|    Sunnyvale|   California| credit|
+|00076009|10-03-2011|4009600|074.97|  Exercise & Fitness|       Free Weights|     Paterson|   New Jersey| credit|
++--------+----------+-------+------+--------------------+-------------------+-------------+-------------+-------+
+only showing top 20 rows
+
+
+#2#
+
+##sql
+csvdf.createOrReplaceTempView("Toxic")
+spark.sql("select * from  Toxic where state = 'LA'").show()
+#dsl
+csvdf.filter("state='LA'").show()
+
+#op#
+
++----------+---------+--------------------+------------------+-----------+----------+-----+-----+---+------------+------------+--------------------+--------------------+
+|first_name|last_name|        company_name|           address|       city|    county|state|  zip|age|      phone1|      phone2|               email|                 web|
++----------+---------+--------------------+------------------+-----------+----------+-----+-----+---+------------+------------+--------------------+--------------------+
+|     James|     Butt|   Benton, John B Jr|6649 N Blue Gum St|New Orleans|   Orleans|   LA|70116|  9|504-621-8927|504-845-1427|     jbutt@gmail.com|http://www.benton...|
+|   Solange|   Shinko|   Mosocco, Ronald A|       426 Wolf St|   Metairie| Jefferson|   LA|70002| 21|504-979-9175|504-265-8174|  solange@shinko.com|http://www.mosocc...|
+|    Arlene|  Klusman|Beck Horizon Buil...|        3 Secor Rd|New Orleans|   Orleans|   LA|70112| 20|504-710-5840|504-946-1807|arlene_klusman@gm...|http://www.beckho...|
+|     Larae|   Gudroe|Lehigh Furn Divsn...| 6651 Municipal Rd|      Houma|Terrebonne|   LA|70360| 33|985-890-7262|985-261-5783|larae_gudroe@gmai...|http://www.lehigh...|
+| Willodean|Konopacki|            Magnuson| 55 Hawthorne Blvd|  Lafayette| Lafayette|   LA|70506| 22|337-253-8384|337-774-7564|willodean_konopac...|http://www.magnus...|
+|  Terrilyn|Rodeigues|      Stuart J Agins|    3718 S Main St|New Orleans|   Orleans|   LA|70130| 33|504-463-4384|504-635-8518|terrilyn.rodeigue...|http://www.stuart...|
+|  Kayleigh|     Lace|Dentalaw Divsn Hl...|43 Huey P Long Ave|  Lafayette| Lafayette|   LA|70508| 11|337-740-9323|337-751-2326|kayleigh.lace@yah...|http://www.dental...|
+|     Jutta|    Amyot|National Medical ...|      49 N Mays St|  Broussard| Lafayette|   LA|70518| 15|337-515-1438|337-991-8070|  jamyot@hotmail.com|http://www.nation...|
+|  Cordelia| Storment|  Burrows, Jon H Esq|    393 Hammond Dr|  Lafayette| Lafayette|   LA|70506| 16|337-566-6001|337-255-3427|cordelia_storment...|http://www.burrow...|
++----------+---------+--------------------+------------------+-----------+----------+-----+-----+---+------------+------------+--------------------+--------------------+
+
++----------+---------+--------------------+------------------+-----------+----------+-----+-----+---+------------+------------+--------------------+--------------------+
+|first_name|last_name|        company_name|           address|       city|    county|state|  zip|age|      phone1|      phone2|               email|                 web|
++----------+---------+--------------------+------------------+-----------+----------+-----+-----+---+------------+------------+--------------------+--------------------+
+|     James|     Butt|   Benton, John B Jr|6649 N Blue Gum St|New Orleans|   Orleans|   LA|70116|  9|504-621-8927|504-845-1427|     jbutt@gmail.com|http://www.benton...|
+|   Solange|   Shinko|   Mosocco, Ronald A|       426 Wolf St|   Metairie| Jefferson|   LA|70002| 21|504-979-9175|504-265-8174|  solange@shinko.com|http://www.mosocc...|
+|    Arlene|  Klusman|Beck Horizon Buil...|        3 Secor Rd|New Orleans|   Orleans|   LA|70112| 20|504-710-5840|504-946-1807|arlene_klusman@gm...|http://www.beckho...|
+|     Larae|   Gudroe|Lehigh Furn Divsn...| 6651 Municipal Rd|      Houma|Terrebonne|   LA|70360| 33|985-890-7262|985-261-5783|larae_gudroe@gmai...|http://www.lehigh...|
+| Willodean|Konopacki|            Magnuson| 55 Hawthorne Blvd|  Lafayette| Lafayette|   LA|70506| 22|337-253-8384|337-774-7564|willodean_konopac...|http://www.magnus...|
+|  Terrilyn|Rodeigues|      Stuart J Agins|    3718 S Main St|New Orleans|   Orleans|   LA|70130| 33|504-463-4384|504-635-8518|terrilyn.rodeigue...|http://www.stuart...|
+|  Kayleigh|     Lace|Dentalaw Divsn Hl...|43 Huey P Long Ave|  Lafayette| Lafayette|   LA|70508| 11|337-740-9323|337-751-2326|kayleigh.lace@yah...|http://www.dental...|
+|     Jutta|    Amyot|National Medical ...|      49 N Mays St|  Broussard| Lafayette|   LA|70518| 15|337-515-1438|337-991-8070|  jamyot@hotmail.com|http://www.nation...|
+|  Cordelia| Storment|  Burrows, Jon H Esq|    393 Hammond Dr|  Lafayette| Lafayette|   LA|70506| 16|337-566-6001|337-255-3427|cordelia_storment...|http://www.burrow...|
++----------+---------+--------------------+------------------+-----------+----------+-----+-----+---+------------+------------+--------------------+--------------------+
+
+
+Process finished with exit code 0
+
+#3#
+data = [
+    ("00000000", "06-26-2011", 200, "Exercise", "GymnasticsPro", "cash"),
+    ("00000001", "05-26-2011", 300, "Exercise", "Weightlifting", "credit"),
+    ("00000002", "06-01-2011", 100, "Exercise", "GymnasticsPro", "cash"),
+    ("00000003", "06-05-2011", 100, "Gymnastics", "Rings", "credit"),
+    ("00000004", "12-17-2011", 300, "Team Sports", "Field", "paytm"),
+    ("00000005", "02-14-2011", 200, "Gymnastics", None, "cash")
+]
+
+df = spark.createDataFrame(data).toDF(
+    "id", "tdate", "amt", "category", "product", "mode"
+)
+
+df.show()
+
+
+
+seldf = df.select("tdate","product")
+seldf.show()
+
+
+dropdf = df.drop("tdate","product")
+dropdf.show()
+
+
+fildf = df.filter(  "  category = 'Exercise' "   )
+fildf.show()
+
+
+muldf = df.filter(  "   category = 'Exercise' and mode = 'cash' ")
+muldf.show()
+
+
+muldfor = df.filter(  "   category = 'Exercise' or  mode = 'cash' ")
+muldfor.show()
+
+#op#
+
+
++--------+----------+---+-----------+-------------+------+
+|      id|     tdate|amt|   category|      product|  mode|
++--------+----------+---+-----------+-------------+------+
+|00000000|06-26-2011|200|   Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|   Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|   Exercise|GymnasticsPro|  cash|
+|00000003|06-05-2011|100| Gymnastics|        Rings|credit|
+|00000004|12-17-2011|300|Team Sports|        Field| paytm|
+|00000005|02-14-2011|200| Gymnastics|         null|  cash|
++--------+----------+---+-----------+-------------+------+
+
++----------+-------------+
+|     tdate|      product|
++----------+-------------+
+|06-26-2011|GymnasticsPro|
+|05-26-2011|Weightlifting|
+|06-01-2011|GymnasticsPro|
+|06-05-2011|        Rings|
+|12-17-2011|        Field|
+|02-14-2011|         null|
++----------+-------------+
+
+26/09/09 16:46:14 WARN ProcfsMetricsGetter: Exception when trying to compute pagesize, as a result reporting of ProcessTree metrics is stopped
++--------+---+-----------+------+
+|      id|amt|   category|  mode|
++--------+---+-----------+------+
+|00000000|200|   Exercise|  cash|
+|00000001|300|   Exercise|credit|
+|00000002|100|   Exercise|  cash|
+|00000003|100| Gymnastics|credit|
+|00000004|300|Team Sports| paytm|
+|00000005|200| Gymnastics|  cash|
++--------+---+-----------+------+
+
++--------+----------+---+--------+-------------+------+
+|      id|     tdate|amt|category|      product|  mode|
++--------+----------+---+--------+-------------+------+
+|00000000|06-26-2011|200|Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|Exercise|GymnasticsPro|  cash|
++--------+----------+---+--------+-------------+------+
+
++--------+----------+---+--------+-------------+----+
+|      id|     tdate|amt|category|      product|mode|
++--------+----------+---+--------+-------------+----+
+|00000000|06-26-2011|200|Exercise|GymnasticsPro|cash|
+|00000002|06-01-2011|100|Exercise|GymnasticsPro|cash|
++--------+----------+---+--------+-------------+----+
+
++--------+----------+---+----------+-------------+------+
+|      id|     tdate|amt|  category|      product|  mode|
++--------+----------+---+----------+-------------+------+
+|00000000|06-26-2011|200|  Exercise|GymnasticsPro|  cash|
+|00000001|05-26-2011|300|  Exercise|Weightlifting|credit|
+|00000002|06-01-2011|100|  Exercise|GymnasticsPro|  cash|
+|00000005|02-14-2011|200|Gymnastics|         null|  cash|
++--------+----------+---+----------+-------------+------+
+
