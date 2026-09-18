@@ -1,0 +1,247 @@
+#1#
+data = [
+    ("Renuka1992@gmail.com", "9856765434"),
+    ("anrasu@gmail.com", "9844567788")
+]
+
+df = spark.createDataFrame(data, ["email", "mobile"])
+
+df.show()
+
+
+
+from pyspark.sql.functions import expr
+
+df1 = (
+    df
+    .withColumn("split_0", expr("split(email, '@')[0]"))
+
+    .withColumn("split_1", expr("split(email, '@')[1]"))
+
+    .withColumn("length", expr("length(split_0)"))
+
+    .withColumn("redlength", expr("length - 3"))
+
+    .withColumn("First", expr("substring(split_0, 1, 1)"))
+
+    .withColumn("last", expr("substring(split_0, length(split_0)-1, 2)"))
+
+    .withColumn(
+        "Masking",
+        expr("concat(First, repeat('*', redlength), last)")
+    )
+    .withColumn(
+        "Final",
+        expr("concat(Masking, '@', split_1)")
+    )
+)
+
+df1.show(truncate=False)
+
+
+#op#
+
++--------------------+----------+
+|               email|    mobile|
++--------------------+----------+
+|Renuka1992@gmail.com|9856765434|
+|    anrasu@gmail.com|9844567788|
++--------------------+----------+
+
++--------------------+----------+----------+---------+------+---------+-----+----+----------+--------------------+
+|email               |mobile    |split_0   |split_1  |length|redlength|First|last|Masking   |Final               |
++--------------------+----------+----------+---------+------+---------+-----+----+----------+--------------------+
+|Renuka1992@gmail.com|9856765434|Renuka1992|gmail.com|10    |7        |R    |92  |R*******92|R*******92@gmail.com|
+|anrasu@gmail.com    |9844567788|anrasu    |gmail.com|6     |3        |a    |su  |a***su    |a***su@gmail.com    |
++--------------------+----------+----------+---------+------+---------+-----+----+----------+--------------------+
+
+#2 insert and update in delta #
+
+print("=====🔴🔴🔴🔴🔴== CELL 1 =======")
+
+
+data = [
+    (1, "Sai",   "Python",     30000, "ACTIVE"),
+    (2, "Raj",   "Python",     32000, "ACTIVE"),
+    (3, "John",  "Java",       28000, "ACTIVE"),
+    (4, "Rita",  "Python",     31000, "ACTIVE"),
+    (5, "Sam",   "Java",       29000, "ACTIVE"),
+    (6, "Kiran", "Databricks", 33000, "ACTIVE"),
+    (7, "Anu",   "Python",     27000, "ACTIVE"),
+    (8, "Ram",   "Spark",      34000, "ACTIVE"),
+    (9, "Priya", "Spark",      30000, "ACTIVE"),
+    (10,"Vijay", "Databricks", 35000, "ACTIVE")
+]
+
+df = spark.createDataFrame(
+    data,
+    ["student_id", "name", "course", "fee", "status"]
+)
+
+df.write \
+  .format("delta") \
+  .mode("overwrite") \
+  .option("overwriteSchema", "true") \
+  .saveAsTable("students")
+
+print("INITIAL DATA")
+display(spark.table("students").orderBy("student_id"))
+
+#op#
+
+|student_id|name|course|fee|status|
+|---|---|---|---|---|
+|1|Sai|Python|30000|ACTIVE|
+|2|Raj|Python|32000|ACTIVE|
+|3|John|Java|28000|ACTIVE|
+|4|Rita|Python|31000|ACTIVE|
+|5|Sam|Java|29000|ACTIVE|
+|6|Kiran|Databricks|33000|ACTIVE|
+|7|Anu|Python|27000|ACTIVE|
+|8|Ram|Spark|34000|ACTIVE|
+|9|Priya|Spark|30000|ACTIVE|
+|10|Vijay|Databricks|35000|ACTIVE|
+
+
+# COMMAND ----------
+
+print("===🔴🔴🔴🔴🔴🔴==CELL 2======")
+
+daily_data = [
+    (2,  "Raj",   "Databricks", 45000, "ACTIVE"),
+    (4,  "Rita",  "Spark",      42000, "ACTIVE"),
+    (3,  "John",  "PySpark",    35000, "ACTIVE"),
+    (11, "Rahul", "Python",     30000, "ACTIVE"),
+    (12, "Sneha", "Databricks", 40000, "ACTIVE")
+]
+
+daily_df = spark.createDataFrame(
+    daily_data,
+    ["student_id", "name", "course", "fee", "status"]
+)
+
+daily_df.display()
+
+
+#op#
+|student_id|name|course|fee|status|
+|---|---|---|---|---|
+|2|Raj|Databricks|45000|ACTIVE|
+|4|Rita|Spark|42000|ACTIVE|
+|3|John|PySpark|35000|ACTIVE|
+|11|Rahul|Python|30000|ACTIVE|
+|12|Sneha|Databricks|40000|ACTIVE|
+
+
+# COMMAND ----------
+
+
+
+print("===🔴🔴🔴🔴🔴==CELL 3======")
+
+from delta.tables import DeltaTable
+
+delta_table = DeltaTable.forName(spark, "students")
+
+
+delta_table.alias("t").merge(
+
+    daily_df.alias("s"),
+
+            "t.student_id = s.student_id"
+            
+).whenMatchedUpdate(
+
+    set={
+
+        "name" : "s.name",
+        "course" : "s.course",
+        "fee" : "s.fee",
+        "status" : "s.status"
+
+    }
+
+).whenNotMatchedInsert(
+
+    values = {
+        "student_id" : "s.student_id",
+        "name" : "s.name",
+        "course" : "s.course",
+        "fee" : "s.fee",
+        "status" : "s.status"
+
+    }
+
+).execute()
+
+
+spark.table("students").orderBy("student_id").display()
+
+
+#op#
+|student_id|name|course|fee|status|
+|---|---|---|---|---|
+|1|Sai|Python|30000|ACTIVE|
+|2|Raj|Databricks|45000|ACTIVE|
+|3|John|PySpark|35000|ACTIVE|
+|4|Rita|Spark|42000|ACTIVE|
+|5|Sam|Java|29000|ACTIVE|
+|6|Kiran|Databricks|33000|ACTIVE|
+|7|Anu|Python|27000|ACTIVE|
+|8|Ram|Spark|34000|ACTIVE|
+|9|Priya|Spark|30000|ACTIVE|
+|10|Vijay|Databricks|35000|ACTIVE|
+|11|Rahul|Python|30000|ACTIVE|
+|12|Sneha|Databricks|40000|ACTIVE|
+
+
+
+#checkong veristion ok #
+
+from  delta.tables import DeltaTable
+
+delta_table = DeltaTable.forName(spark , "students")
+
+delta_table.history().display()
+
+#op#
+|version|timestamp|userId|userName|operation|operationParameters|job|notebook|queryHistoryStatementId|clusterId|readVersion|isolationLevel|isBlindAppend|operationMetrics|userMetadata|engineInfo|
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|16|2026-09-16T08:15:39.000Z|75257340869101|bodkepriyanka123@gmail.com|OPTIMIZE|{"clusterBy":"[]","zOrderBy":"[]","batchId":"0","predicate":"[]","auto":"true"}|null|{"notebookId":"919066931226541"}|ceaafd02-4e0c-47ad-a47c-64117b025036|0916-081228-9gey7zra-v2n|15|SnapshotIsolation|false|{"numRemovedFiles":"6","numRemovedBytes":"10407","p25FileSize":"1985","numDeletionVectorsRemoved":"1","minFileSize":"1985","p75FileSize":"1985","p50FileSize":"1985","numAddedBytes":"1985","numAddedFiles":"1","maxFileSize":"1985"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|15|2026-09-16T08:15:35.000Z|75257340869101|bodkepriyanka123@gmail.com|MERGE|{"predicate":"[\"(student_id#11623L = student_id#11628L)\"]","clusterBy":"[]","matchedPredicates":"[{\"actionType\":\"update\"}]","statsOnLoad":"true","notMatchedBySourcePredicates":"[]","notMatchedPredicates":"[{\"actionType\":\"insert\"}]"}|null|{"notebookId":"919066931226541"}|ceaafd02-4e0c-47ad-a47c-64117b025036|0916-081228-9gey7zra-v2n|14|WriteSerializable|false|{"numTargetRowsCopied":"0","numTargetRowsDeleted":"0","numTargetBytesRemoved":"0","numTargetDeletionVectorsAdded":"1","numTargetRowsMatchedUpdated":"3","numTargetRowsMatchedDeleted":"0","numTargetRowsUpdated":"3","numTargetChangeFilesAdded":"0","numTargetRowsNotMatchedBySourceDeleted":"0","rewriteTimeMs":"3576","numTargetFilesAdded":"5","numTargetBytesAdded":"8505","executionTimeMs":"8063","materializeSourceTimeMs":"607","numTargetRowsInserted":"2","numTargetDeletionVectorsUpdated":"0","scanTimeMs":"3745","numOutputRows":"5","numTargetDeletionVectorsRemoved":"0","numTargetRowsNotMatchedBySourceUpdated":"0","numSourceRows":"5","numTargetFilesRemoved":"0"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|14|2026-09-16T08:13:13.000Z|75257340869101|bodkepriyanka123@gmail.com|CREATE OR REPLACE TABLE AS SELECT|{"isV1SaveAsTableOverwrite":"true","partitionBy":"[]","clusterBy":"[]","description":null,"isManaged":"true","canOverwriteSchema":"true","properties":"{\"delta.parquet.format.version\":\"2.12.0\",\"delta.parquet.format.version.afe.internal\":\"2.12.0\",\"delta.parquet.compression.codec\":\"zstd\",\"delta.enableDeletionVectors\":\"true\"}","statsOnLoad":"true"}|null|{"notebookId":"919066931226541"}|c1e5ba37-4e99-4338-80e7-a62f828a9ed2|0916-081228-9gey7zra-v2n|13|WriteSerializable|false|{"numFiles":"1","numRemovedFiles":"1","numRemovedBytes":"1881","numDeletionVectorsRemoved":"0","numOutputRows":"10","numOutputBytes":"1902"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|13|2026-09-15T12:29:50.000Z|75257340869101|bodkepriyanka123@gmail.com|MERGE|{"predicate":"[\"(student_id#12084L = student_id#12089L)\"]","clusterBy":"[]","matchedPredicates":"[{\"actionType\":\"delete\"}]","statsOnLoad":"false","notMatchedBySourcePredicates":"[]","notMatchedPredicates":"[]"}|null|{"notebookId":"4278698745397990"}|a0e884ba-1ce7-4a90-ab53-4604cec4f9f8|0915-121932-vcvwsf15-v2n|12|WriteSerializable|false|{"numTargetRowsCopied":"0","numTargetRowsDeleted":"0","numTargetBytesRemoved":"0","numTargetDeletionVectorsAdded":"0","numTargetRowsMatchedUpdated":"0","numTargetRowsMatchedDeleted":"0","numTargetRowsUpdated":"0","numTargetChangeFilesAdded":"0","numTargetRowsNotMatchedBySourceDeleted":"0","rewriteTimeMs":"0","numTargetFilesAdded":"0","numTargetBytesAdded":"0","executionTimeMs":"1466","materializeSourceTimeMs":"137","numTargetRowsInserted":"0","numTargetDeletionVectorsUpdated":"0","scanTimeMs":"1283","numOutputRows":"0","numTargetDeletionVectorsRemoved":"0","numTargetRowsNotMatchedBySourceUpdated":"0","numSourceRows":"3","numTargetFilesRemoved":"0"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|12|2026-09-15T12:23:46.000Z|75257340869101|bodkepriyanka123@gmail.com|OPTIMIZE|{"clusterBy":"[]","zOrderBy":"[]","batchId":"0","predicate":"[]","auto":"true"}|null|{"notebookId":"4278698745397990"}|0df240d9-629c-44e1-80ac-e63467f2a4ef|0915-121932-vcvwsf15-v2n|11|SnapshotIsolation|false|{"numRemovedFiles":"1","numRemovedBytes":"1902","p25FileSize":"1881","numDeletionVectorsRemoved":"1","minFileSize":"1881","p75FileSize":"1881","p50FileSize":"1881","numAddedBytes":"1881","numAddedFiles":"1","maxFileSize":"1881"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|11|2026-09-15T12:23:42.000Z|75257340869101|bodkepriyanka123@gmail.com|MERGE|{"predicate":"[\"(student_id#11616L = student_id#11621L)\"]","clusterBy":"[]","matchedPredicates":"[{\"actionType\":\"delete\"}]","statsOnLoad":"false","notMatchedBySourcePredicates":"[]","notMatchedPredicates":"[]"}|null|{"notebookId":"4278698745397990"}|0df240d9-629c-44e1-80ac-e63467f2a4ef|0915-121932-vcvwsf15-v2n|10|WriteSerializable|false|{"numTargetRowsCopied":"0","numTargetRowsDeleted":"3","numTargetBytesRemoved":"0","numTargetDeletionVectorsAdded":"1","numTargetRowsMatchedUpdated":"0","numTargetRowsMatchedDeleted":"3","numTargetRowsUpdated":"0","numTargetChangeFilesAdded":"0","numTargetRowsNotMatchedBySourceDeleted":"0","rewriteTimeMs":"1194","numTargetFilesAdded":"0","numTargetBytesAdded":"0","executionTimeMs":"6554","materializeSourceTimeMs":"547","numTargetRowsInserted":"0","numTargetDeletionVectorsUpdated":"0","scanTimeMs":"4704","numOutputRows":"0","numTargetDeletionVectorsRemoved":"0","numTargetRowsNotMatchedBySourceUpdated":"0","numSourceRows":"3","numTargetFilesRemoved":"0"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|10|2026-09-15T12:20:11.000Z|75257340869101|bodkepriyanka123@gmail.com|CREATE OR REPLACE TABLE AS SELECT|{"isV1SaveAsTableOverwrite":"true","partitionBy":"[]","clusterBy":"[]","description":null,"isManaged":"true","canOverwriteSchema":"true","properties":"{\"delta.parquet.format.version\":\"2.12.0\",\"delta.parquet.format.version.afe.internal\":\"2.12.0\",\"delta.parquet.compression.codec\":\"zstd\",\"delta.enableDeletionVectors\":\"true\"}","statsOnLoad":"true"}|null|{"notebookId":"4278698745397990"}|90853ec3-3156-45b2-858d-0ab9dd4112f5|0915-121932-vcvwsf15-v2n|9|WriteSerializable|false|{"numFiles":"1","numRemovedFiles":"1","numRemovedBytes":"1913","numDeletionVectorsRemoved":"0","numOutputRows":"10","numOutputBytes":"1902"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|9|2026-09-15T11:45:31.000Z|75257340869101|bodkepriyanka123@gmail.com|OPTIMIZE|{"clusterBy":"[]","zOrderBy":"[]","batchId":"0","predicate":"[]","auto":"true"}|null|{"notebookId":"4278698745397990"}|af7f86a2-8860-4e68-a15a-66c1292a973c|0915-113754-37sa3x4q-v2n|8|SnapshotIsolation|false|{"numRemovedFiles":"2","numRemovedBytes":"3716","p25FileSize":"1913","numDeletionVectorsRemoved":"1","minFileSize":"1913","p75FileSize":"1913","p50FileSize":"1913","numAddedBytes":"1913","numAddedFiles":"1","maxFileSize":"1913"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|8|2026-09-15T11:45:28.000Z|75257340869101|bodkepriyanka123@gmail.com|MERGE|{"predicate":"[\"(student_id#11926L = student_id#11931L)\"]","clusterBy":"[]","matchedPredicates":"[{\"actionType\":\"update\"}]","statsOnLoad":"false","notMatchedBySourcePredicates":"[]","notMatchedPredicates":"[]"}|null|{"notebookId":"4278698745397990"}|af7f86a2-8860-4e68-a15a-66c1292a973c|0915-113754-37sa3x4q-v2n|7|WriteSerializable|false|{"numTargetRowsCopied":"0","numTargetRowsDeleted":"0","numTargetBytesRemoved":"0","numTargetDeletionVectorsAdded":"1","numTargetRowsMatchedUpdated":"3","numTargetRowsMatchedDeleted":"0","numTargetRowsUpdated":"3","numTargetChangeFilesAdded":"0","numTargetRowsNotMatchedBySourceDeleted":"0","rewriteTimeMs":"3030","numTargetFilesAdded":"1","numTargetBytesAdded":"1814","executionTimeMs":"7059","materializeSourceTimeMs":"488","numTargetRowsInserted":"0","numTargetDeletionVectorsUpdated":"0","scanTimeMs":"3374","numOutputRows":"3","numTargetDeletionVectorsRemoved":"0","numTargetRowsNotMatchedBySourceUpdated":"0","numSourceRows":"3","numTargetFilesRemoved":"0"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|7|2026-09-15T11:45:05.000Z|75257340869101|bodkepriyanka123@gmail.com|CREATE OR REPLACE TABLE AS SELECT|{"isV1SaveAsTableOverwrite":"true","partitionBy":"[]","clusterBy":"[]","description":null,"isManaged":"true","canOverwriteSchema":"true","properties":"{\"delta.parquet.format.version\":\"2.12.0\",\"delta.parquet.format.version.afe.internal\":\"2.12.0\",\"delta.parquet.compression.codec\":\"zstd\",\"delta.enableDeletionVectors\":\"true\"}","statsOnLoad":"true"}|null|{"notebookId":"4278698745397990"}|8879bf61-6faa-4934-ad3d-0fb809bb035c|0915-113754-37sa3x4q-v2n|6|WriteSerializable|false|{"numFiles":"1","numRemovedFiles":"1","numRemovedBytes":"1902","numDeletionVectorsRemoved":"0","numOutputRows":"10","numOutputBytes":"1902"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|6|2026-09-15T11:38:43.000Z|75257340869101|bodkepriyanka123@gmail.com|CREATE OR REPLACE TABLE AS SELECT|{"isV1SaveAsTableOverwrite":"true","partitionBy":"[]","clusterBy":"[]","description":null,"isManaged":"true","canOverwriteSchema":"true","properties":"{\"delta.parquet.format.version\":\"2.12.0\",\"delta.parquet.format.version.afe.internal\":\"2.12.0\",\"delta.parquet.compression.codec\":\"zstd\",\"delta.enableDeletionVectors\":\"true\"}","statsOnLoad":"true"}|null|{"notebookId":"4278698745397990"}|01c87793-ebd7-49ab-8fec-69d97b1d13d9|0915-113754-37sa3x4q-v2n|5|WriteSerializable|false|{"numFiles":"1","numRemovedFiles":"1","numRemovedBytes":"1879","numDeletionVectorsRemoved":"0","numOutputRows":"10","numOutputBytes":"1902"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|5|2026-09-12T14:07:49.000Z|75257340869101|bodkepriyanka123@gmail.com|OPTIMIZE|{"clusterBy":"[]","zOrderBy":"[]","batchId":"0","predicate":"[]","auto":"true"}|null|{"notebookId":"110467249239094"}|8762b71d-cdc6-445b-8526-95e18efac0de|0912-140616-2bcp3m-v2n|4|SnapshotIsolation|false|{"numRemovedFiles":"1","numRemovedBytes":"1900","p25FileSize":"1879","numDeletionVectorsRemoved":"1","minFileSize":"1879","p75FileSize":"1879","p50FileSize":"1879","numAddedBytes":"1879","numAddedFiles":"1","maxFileSize":"1879"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|4|2026-09-12T14:07:45.000Z|75257340869101|bodkepriyanka123@gmail.com|MERGE|{"predicate":"[\"(student_id#11627L = student_id#11632L)\"]","clusterBy":"[]","matchedPredicates":"[{\"actionType\":\"delete\"}]","statsOnLoad":"false","notMatchedBySourcePredicates":"[]","notMatchedPredicates":"[]"}|null|{"notebookId":"110467249239094"}|8762b71d-cdc6-445b-8526-95e18efac0de|0912-140616-2bcp3m-v2n|3|WriteSerializable|false|{"numTargetRowsCopied":"0","numTargetRowsDeleted":"3","numTargetBytesRemoved":"0","numTargetDeletionVectorsAdded":"1","numTargetRowsMatchedUpdated":"0","numTargetRowsMatchedDeleted":"3","numTargetRowsUpdated":"0","numTargetChangeFilesAdded":"0","numTargetRowsNotMatchedBySourceDeleted":"0","rewriteTimeMs":"1104","numTargetFilesAdded":"0","numTargetBytesAdded":"0","executionTimeMs":"5793","materializeSourceTimeMs":"521","numTargetRowsInserted":"0","numTargetDeletionVectorsUpdated":"0","scanTimeMs":"4031","numOutputRows":"0","numTargetDeletionVectorsRemoved":"0","numTargetRowsNotMatchedBySourceUpdated":"0","numSourceRows":"3","numTargetFilesRemoved":"0"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|3|2026-09-12T14:07:07.000Z|75257340869101|bodkepriyanka123@gmail.com|CREATE OR REPLACE TABLE AS SELECT|{"isV1SaveAsTableOverwrite":"true","partitionBy":"[]","clusterBy":"[]","description":null,"isManaged":"true","canOverwriteSchema":"true","properties":"{\"delta.parquet.format.version\":\"2.12.0\",\"delta.parquet.format.version.afe.internal\":\"2.12.0\",\"delta.parquet.compression.codec\":\"zstd\",\"delta.enableDeletionVectors\":\"true\"}","statsOnLoad":"true"}|null|{"notebookId":"110467249239094"}|5254c3a4-523f-4c94-9643-e6b61b1deb53|0912-140616-2bcp3m-v2n|2|WriteSerializable|false|{"numFiles":"1","numRemovedFiles":"1","numRemovedBytes":"1914","numDeletionVectorsRemoved":"0","numOutputRows":"10","numOutputBytes":"1900"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|2|2026-09-12T13:21:41.000Z|75257340869101|bodkepriyanka123@gmail.com|OPTIMIZE|{"clusterBy":"[]","zOrderBy":"[]","batchId":"0","predicate":"[]","auto":"true"}|null|{"notebookId":"110467249239094"}|7940edea-78a7-464a-b3c9-2978e67e3358|0912-131224-q33zprh4-v2n|1|SnapshotIsolation|false|{"numRemovedFiles":"2","numRemovedBytes":"3694","p25FileSize":"1914","numDeletionVectorsRemoved":"1","minFileSize":"1914","p75FileSize":"1914","p50FileSize":"1914","numAddedBytes":"1914","numAddedFiles":"1","maxFileSize":"1914"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|1|2026-09-12T13:21:37.000Z|75257340869101|bodkepriyanka123@gmail.com|MERGE|{"predicate":"[\"(student_id#11806L = student_id#11811L)\"]","clusterBy":"[]","matchedPredicates":"[{\"actionType\":\"update\"}]","statsOnLoad":"false","notMatchedBySourcePredicates":"[]","notMatchedPredicates":"[]"}|null|{"notebookId":"110467249239094"}|7940edea-78a7-464a-b3c9-2978e67e3358|0912-131224-q33zprh4-v2n|0|WriteSerializable|false|{"numTargetRowsCopied":"0","numTargetRowsDeleted":"0","numTargetBytesRemoved":"0","numTargetDeletionVectorsAdded":"1","numTargetRowsMatchedUpdated":"3","numTargetRowsMatchedDeleted":"0","numTargetRowsUpdated":"3","numTargetChangeFilesAdded":"0","numTargetRowsNotMatchedBySourceDeleted":"0","rewriteTimeMs":"3069","numTargetFilesAdded":"1","numTargetBytesAdded":"1792","executionTimeMs":"7264","materializeSourceTimeMs":"624","numTargetRowsInserted":"0","numTargetDeletionVectorsUpdated":"0","scanTimeMs":"3444","numOutputRows":"3","numTargetDeletionVectorsRemoved":"0","numTargetRowsNotMatchedBySourceUpdated":"0","numSourceRows":"3","numTargetFilesRemoved":"0"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+|0|2026-09-12T13:13:38.000Z|75257340869101|bodkepriyanka123@gmail.com|CREATE OR REPLACE TABLE AS SELECT|{"isV1SaveAsTableOverwrite":"true","partitionBy":"[]","clusterBy":"[]","description":null,"isManaged":"true","canOverwriteSchema":"true","properties":"{\"delta.parquet.format.version\":\"2.12.0\",\"delta.parquet.format.version.afe.internal\":\"2.12.0\",\"delta.parquet.compression.codec\":\"zstd\",\"delta.enableDeletionVectors\":\"true\"}","statsOnLoad":"true"}|null|{"notebookId":"110467249239094"}|e668e573-02d8-4fab-b5ea-72b2f371d62b|0912-131224-q33zprh4-v2n|null|WriteSerializable|false|{"numFiles":"1","numRemovedFiles":"0","numRemovedBytes":"0","numDeletionVectorsRemoved":"0","numOutputRows":"10","numOutputBytes":"1902"}|null|Databricks-Runtime/19.6.x-aarch64-photon-scala2.13|
+
+
+
+
+#vertion 0#
+
+spark.read.format("delta").option("versionAsOf","0").table("students").display()
+
+#op#
+|student_id|name|course|fee|status|
+|---|---|---|---|---|
+|1|Sai|Python|30000|ACTIVE|
+|2|Raj|Python|32000|ACTIVE|
+|3|John|Java|28000|ACTIVE|
+|4|Rita|Python|31000|ACTIVE|
+|5|Sam|Java|29000|ACTIVE|
+|6|Kiran|Databricks|33000|ACTIVE|
+|7|Anu|Python|27000|ACTIVE|
+|8|Ram|Spark|34000|ACTIVE|
+|9|Priya|Spark|30000|ACTIVE|
+|10|Vijay|Databricks|35000|ACTIVE|

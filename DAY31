@@ -1,0 +1,321 @@
+
+# second highest salary
+data = [
+    ("DEPT1", 500),
+    ("DEPT1", 1000),
+    ("DEPT1", 700),
+
+    ("DEPT2", 200),
+    ("DEPT2", 400),
+
+    ("DEPT3", 200),
+    ("DEPT3", 500)
+]
+
+df = spark.createDataFrame(data, ["department", "salary"])
+
+df.show()
+
+#op#
++----------+------+
+|department|salary|
++----------+------+
+|     DEPT1|   500|
+|     DEPT1|  1000|
+|     DEPT1|   700|
+|     DEPT2|   200|
+|     DEPT2|   400|
+|     DEPT3|   200|
+|     DEPT3|   500|
++----------+------+
+
+from pyspark.sql.functions import *
+
+
+denseRankdf = df.withColumn("dense_rank" , expr("""
+                                                 dense_rank() 
+                                                 over 
+                                                    ( 
+                                                        partition by department 
+                                                        order by salary desc 
+                                                    )     
+                                            """))
+
+
+denseRankdf.show()
+
+
+finaldf = denseRankdf.filter("dense_rank = 2").drop("dense_rank")
+
+finaldf.show()
+
+#op#
++----------+------+----------+
+|department|salary|dense_rank|
++----------+------+----------+
+|     DEPT1|  1000|         1|
+|     DEPT1|   700|         2|
+|     DEPT1|   500|         3|
+|     DEPT2|   400|         1|
+|     DEPT2|   200|         2|
+|     DEPT3|   500|         1|
+|     DEPT3|   200|         2|
++----------+------+----------+
+
++----------+------+
+|department|salary|
++----------+------+
+|     DEPT1|   700|
+|     DEPT2|   200|
+|     DEPT3|   200|
++----------+------+
+
+
+##2##
+#### CELL 1 CODE
+
+
+data = [
+    (1, "Sai",   "Python",     30000, "ACTIVE"),
+    (2, "Raj",   "Python",     32000, "ACTIVE"),
+    (3, "John",  "Java",       28000, "ACTIVE"),
+    (4, "Rita",  "Python",     31000, "ACTIVE"),
+    (5, "Sam",   "Java",       29000, "ACTIVE"),
+    (6, "Kiran", "Databricks", 33000, "ACTIVE"),
+    (7, "Anu",   "Python",     27000, "ACTIVE"),
+    (8, "Ram",   "Spark",      34000, "ACTIVE"),
+    (9, "Priya", "Spark",      30000, "ACTIVE"),
+    (10,"Vijay", "Databricks", 35000, "ACTIVE")
+]
+
+df = spark.createDataFrame(
+    data,
+    ["student_id", "name", "course", "fee", "status"]
+)
+
+df.write \
+  .format("delta") \
+  .mode("overwrite") \
+  .option("overwriteSchema", "true") \
+  .saveAsTable("students")
+
+print("INITIAL DATA")
+display(spark.table("students").orderBy("student_id"))
+
+
+fee_updates = [
+    (2, 37000),
+    (4, 36000),
+    (7, 32000)
+]
+
+fee_updates_df = spark.createDataFrame(
+    fee_updates,
+    ["student_id", "new_fee"]
+)
+
+fee_updates_df.display()
+
+#op#
+student_id	name	course	fee	status
+1	Sai	Python	30000	ACTIVE
+2	Raj	Python	32000	ACTIVE
+3	John	Java	28000	ACTIVE
+4	Rita	Python	31000	ACTIVE
+5	Sam	Java	29000	ACTIVE
+6	Kiran	Databricks	33000	ACTIVE
+7	Anu	Python	27000	ACTIVE
+8	Ram	Spark	34000	ACTIVE
+9	Priya	Spark	30000	ACTIVE
+10	Vijay	Databricks	35000	ACTIVE
+
+
+student_id	new_fee
+2	37000
+4	36000
+7	32000
+
+
+
+
+##########  CELL 2
+
+
+from delta.tables import DeltaTable
+
+delta_students = DeltaTable.forName(spark, "students")
+
+delta_students.alias("target") \
+    .merge(fee_updates_df.alias("source"), "target.student_id = source.student_id") \
+    .whenMatchedUpdate(set={"fee": "source.new_fee"}) \
+    .execute()
+
+print("AFTER UPDATE")
+display(spark.table("students").orderBy("student_id"))
+
+
+#op#
+
+student_id	name	course	fee	status
+1	Sai	Python	30000	ACTIVE
+2	Raj	Python	37000	ACTIVE
+3	John	Java	28000	ACTIVE
+4	Rita	Python	36000	ACTIVE
+5	Sam	Java	29000	ACTIVE
+6	Kiran	Databricks	33000	ACTIVE
+7	Anu	Python	32000	ACTIVE
+8	Ram	Spark	34000	ACTIVE
+9	Priya	Spark	30000	ACTIVE
+10	Vijay	Databricks	35000	ACTIVE
+
+
+
+singal and multiple update 
+# Databricks notebook source
+print("======= CELL 1 =======")
+
+
+data = [
+    (1, "Sai",   "Python",     30000, "ACTIVE"),
+    (2, "Raj",   "Python",     32000, "ACTIVE"),
+    (3, "John",  "Java",       28000, "ACTIVE"),
+    (4, "Rita",  "Python",     31000, "ACTIVE"),
+    (5, "Sam",   "Java",       29000, "ACTIVE"),
+    (6, "Kiran", "Databricks", 33000, "ACTIVE"),
+    (7, "Anu",   "Python",     27000, "ACTIVE"),
+    (8, "Ram",   "Spark",      34000, "ACTIVE"),
+    (9, "Priya", "Spark",      30000, "ACTIVE"),
+    (10,"Vijay", "Databricks", 35000, "ACTIVE")
+]
+
+df = spark.createDataFrame(
+    data,
+    ["student_id", "name", "course", "fee", "status"]
+)
+
+df.write \
+  .format("delta") \
+  .mode("overwrite") \
+  .option("overwriteSchema", "true") \
+  .saveAsTable("students")
+
+print("INITIAL DATA")
+display(spark.table("students").orderBy("student_id"))
+
+#op#
+student_id	name	course	fee	status
+1	Sai	Python	30000	ACTIVE
+2	Raj	Python	32000	ACTIVE
+3	John	Java	28000	ACTIVE
+4	Rita	Python	31000	ACTIVE
+5	Sam	Java	29000	ACTIVE
+6	Kiran	Databricks	33000	ACTIVE
+7	Anu	Python	27000	ACTIVE
+8	Ram	Spark	34000	ACTIVE
+9	Priya	Spark	30000	ACTIVE
+10	Vijay	Databricks	35000	ACTIVE
+
+
+# COMMAND ----------
+
+
+print("======= CELL 2 =======")
+
+
+multiple_updates = [
+    (1, "Databricks", 40000, "ACTIVE"),
+    (3, "PySpark",    35000, "ACTIVE"),
+    (6, "Spark",      38000, "INACTIVE")
+]
+
+multiple_updates_df = spark.createDataFrame(
+    multiple_updates,
+    ["student_id", "course", "fee", "status"]
+)
+
+multiple_updates_df.display()
+
+#op#
+student_id	course	fee	status
+1	Databricks	40000	ACTIVE
+3	PySpark	35000	ACTIVE
+6	Spark	38000	INACTIVE
+
+
+
+# COMMAND ----------
+
+print("======= CELL 3 =======")
+
+
+
+from delta.tables import DeltaTable
+
+delta_table = DeltaTable.forName( spark , "students")
+
+
+delta_table.alias("t").merge(
+
+        multiple_updates_df.alias("s"),
+
+        "t.student_id = s.student_id"
+        
+).whenMatchedDelete(
+
+).execute()
+
+
+
+spark.table("students").display()
+
+
+#op#
+student_id	name	course	fee	status
+2	Raj	Python	32000	ACTIVE
+4	Rita	Python	31000	ACTIVE
+5	Sam	Java	29000	ACTIVE
+7	Anu	Python	27000	ACTIVE
+8	Ram	Spark	34000	ACTIVE
+9	Priya	Spark	30000	ACTIVE
+10	Vijay	Databricks	35000	ACTIVE
+
+
+
+#delete 
+
+
+# COMMAND ----------
+
+print("======= CELL 3 =======")
+
+
+
+from delta.tables import DeltaTable
+
+delta_table = DeltaTable.forName( spark , "students")
+
+
+delta_table.alias("t").merge(
+
+        multiple_updates_df.alias("s"),
+
+        "t.student_id = s.student_id"
+        
+).whenMatchedDelete(
+
+).execute()
+
+
+
+spark.table("students").display()
+
+
+student_id	name	course	fee	status
+2	Raj	Python	32000	ACTIVE
+4	Rita	Python	31000	ACTIVE
+5	Sam	Java	29000	ACTIVE
+7	Anu	Python	27000	ACTIVE
+8	Ram	Spark	34000	ACTIVE
+9	Priya	Spark	30000	ACTIVE
+10	Vijay	Databricks	35000	ACTIVE
+

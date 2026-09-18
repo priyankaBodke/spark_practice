@@ -1,0 +1,96 @@
+# scnnario pivot means column value convert in column name #
+
+from pyspark.sql.functions import *
+data = [
+    (101, "Eng", 90),
+    (101, "Sci", 80),
+    (101, "Mat", 95),
+    (102, "Eng", 75),
+    (102, "Sci", 85),
+    (102, "Mat", 90)
+]
+columns = ["Id", "Subject", "Marks"]
+rdd = spark.sparkContext.parallelize(data)
+df = rdd.toDF(columns)
+df.show()
+
+pivotdf = (
+df.groupBy("Id")
+.pivot("Subject")
+.agg(first("Marks"))
+)
+
+pivotdf.show()
+
+#op#
+
++---+-------+-----+
+| Id|Subject|Marks|
++---+-------+-----+
+|101|    Eng|   90|
+|101|    Sci|   80|
+|101|    Mat|   95|
+|102|    Eng|   75|
+|102|    Sci|   85|
+|102|    Mat|   90|
++---+-------+-----+
+
++---+---+---+---+
+| Id|Eng|Mat|Sci|
++---+---+---+---+
+|101| 90| 95| 80|
+|102| 75| 90| 85|
++---+---+---+---+
+
+
+#2#
+
+from pyspark.sql.functions import *
+
+data = [
+    ('A', 'D', 'D'),
+    ('B', 'A', 'A'),
+    ('A', 'D', 'A')
+]
+
+df = spark.createDataFrame(
+    data,
+    ["TeamA", "TeamB", "Won"]
+)
+
+df.show()
+
+# Combine TeamA and TeamB
+teams_df = df.selectExpr(
+    "stack(2, TeamA, TeamB) as TeamName",
+    "Won"
+)
+
+# Calculate total wins
+result_df = teams_df.groupBy("TeamName").agg(
+    sum(
+        when(col("TeamName") == col("Won"), 1)
+        .otherwise(0)
+    ).alias("Won")
+)
+
+result_df.orderBy("TeamName").show()
+
+#op#
+
++-----+-----+---+
+|TeamA|TeamB|Won|
++-----+-----+---+
+|    A|    D|  D|
+|    B|    A|  A|
+|    A|    D|  A|
++-----+-----+---+
+
++--------+---+
+|TeamName|Won|
++--------+---+
+|       A|  2|
+|       B|  0|
+|       D|  1|
++--------+---+
+
